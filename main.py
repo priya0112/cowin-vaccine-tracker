@@ -9,7 +9,7 @@ import pyttsx3
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+                    level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -72,17 +72,18 @@ def process_slot_information(info: dict):
                                     session['available_capacity'], center['name'], session['date'],
                                     session['min_age_limit']))
                 info_string = "{age} plus Slots Found!\n" \
-                              "- Date: {date}\n" \
-                              "- Age Group: {age} plus\n" \
-                              "- Vaccine: {vaccine_name}\n" \
-                              "- Available Slots: {available_slots}\n\n" \
-                              "- Price: {price}\n\n" \
                               "- Center Name: {center_name}\n" \
                               "- Address: {center_address}\n" \
                               "- Block Name: {block_name}\n" \
                               "- District: {district_name}\n" \
                               "- State: {state_name}\n" \
-                              "- PIN Code: {pin_code}".format(
+                              "- PIN Code: {pin_code}\n\n"\
+                              "- Date: {date}\n" \
+                              "- Age Group: {age} plus\n" \
+                              "- Vaccine: {vaccine_name}\n" \
+                              "- Available Slots: {available_slots}\n\n" \
+                              "- Price: {price}" \
+                              .format(
                                     age=session['min_age_limit'],
                                     date=session['date'],
                                     vaccine_name=session['vaccine'],
@@ -116,8 +117,9 @@ if __name__ == "__main__":
         this_week = datetime.datetime.today().strftime('%d-%m-%Y')
         next_week = (datetime.datetime.today() + datetime.timedelta(days=7)).strftime('%d-%m-%Y')
         for district in district_ids:
-            if datetime.datetime.today().replace(hour=13) > datetime.datetime.now() and district != nearest_district:
+            if datetime.datetime.today().replace(hour=13) < datetime.datetime.now() and district != nearest_district:
                 this_week = (datetime.datetime.today() + datetime.timedelta(days=1)).strftime('%d-%m-%Y')
+            logger.debug('This week value: %s for district - %s' % (this_week, district))
             try:
                 process_slot_information(get_slots_by_district(district, this_week))
                 time.sleep(2)
