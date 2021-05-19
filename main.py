@@ -106,14 +106,36 @@ def process_slot_information(info: dict):
 if __name__ == "__main__":
     speech_engine.say('Initiating CoWin monitoring.')
     speech_engine.runAndWait()
+    night = None
     sleep_time = day_sleep_time
     while True:
         if datetime.datetime.today().replace(hour=6) > \
                 datetime.datetime.now() or \
                 datetime.datetime.today().replace(hour=20) < datetime.datetime.now():
             sleep_time = night_sleep_time
+            if not night:
+                send_telegram_notification("Good night! I will be checking for slots every %s minute(s)."
+                                           % (sleep_time/60))
+                night = True
         else:
             sleep_time = day_sleep_time
+            if night or night is None:
+                greeting = None
+                if datetime.datetime.today().replace(hour=6) \
+                        < datetime.datetime.now() \
+                        < datetime.datetime.today().replace(hour=12):
+                    greeting = 'morning'
+                elif datetime.datetime.today().replace(hour=12) \
+                        <= datetime.datetime.now() \
+                        < datetime.datetime.today().replace(hour=16):
+                    greeting = 'afternoon'
+                elif datetime.datetime.today().replace(hour=16) \
+                        <= datetime.datetime.now() \
+                        < datetime.datetime.today().replace(hour=20):
+                    greeting = 'evening'
+                send_telegram_notification("Good %s! I will be checking for slots every %s minute(s)."
+                                           % (greeting, sleep_time / 60))
+                night = False
         this_week = datetime.datetime.today().strftime('%d-%m-%Y')
         next_week = (datetime.datetime.today() + datetime.timedelta(days=7)).strftime('%d-%m-%Y')
         for district in district_ids:
